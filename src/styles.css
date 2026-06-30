@@ -1,0 +1,429 @@
+:root {
+  --bg: #0b0a14;
+  --text: #edebf4;
+  --muted: #9a95ab;
+  --accent: #8b5cf6;
+  --accent-2: #a78bfa;
+
+  /* Surfaces — translucent over the dark canvas, hairline borders */
+  --surface: rgba(255, 255, 255, 0.045);
+  --surface-hover: rgba(255, 255, 255, 0.07);
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.16);
+
+  --radius-lg: 22px;
+  --radius-md: 14px;
+  --radius-sm: 11px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--text);
+  font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(1100px 560px at 50% -12%, rgba(139, 92, 246, 0.22), transparent 60%),
+    radial-gradient(820px 520px at 100% 0%, rgba(168, 85, 247, 0.12), transparent 55%),
+    radial-gradient(760px 520px at 0% 18%, rgba(99, 102, 241, 0.1), transparent 55%);
+  background-attachment: fixed;
+}
+
+.app {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 56px 24px 96px;
+}
+
+/* ---- Header ---- */
+header {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+header h1 {
+  margin: 0 0 14px;
+  font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+  font-style: italic;
+  font-size: 96px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.12;
+  background: linear-gradient(180deg, #ffffff 0%, #cbbdf7 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.sub {
+  margin: 0 auto;
+  color: var(--muted);
+  max-width: 540px;
+  line-height: 1.6;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+}
+
+/* ---- Controls panel ---- */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 22px 24px;
+  margin-bottom: 18px;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 12px;
+}
+
+.field label {
+  color: var(--muted);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+
+.field input[type="number"],
+.field select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: inherit;
+  font-weight: 500;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.05);
+  min-width: 104px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+
+.field select {
+  /* custom chevron so the native dark arrow doesn't look off */
+  padding-right: 32px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239a95ab' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 11px center;
+}
+
+.field select option {
+  background: #16131f;
+  color: var(--text);
+}
+
+.field input:hover,
+.field select:hover {
+  border-color: var(--border-strong);
+}
+
+.field input[type="number"]:focus,
+.field select:focus {
+  border-color: var(--accent);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.28);
+}
+
+.field.checkbox {
+  justify-content: flex-end;
+}
+
+.field.checkbox label {
+  flex-direction: row;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--text);
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.field.checkbox input {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--accent);
+}
+
+/* ---- Dropzone ---- */
+.dropzone {
+  border: 1.5px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  padding: 46px;
+  text-align: center;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  transition: border-color 0.18s, background 0.18s, transform 0.18s;
+}
+
+.dropzone:hover,
+.dropzone.over {
+  border-color: var(--accent);
+  background: rgba(139, 92, 246, 0.08);
+  transform: translateY(-1px);
+}
+
+.dropzone strong {
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.dropzone span {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* ---- Action bar ---- */
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 26px 0;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.bar-actions {
+  display: flex;
+  gap: 12px;
+}
+
+button {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  border-radius: 999px;
+  padding: 11px 22px;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.2s ease;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Flat fill with only a faint top-to-bottom gradient — no border, no glow. */
+button.primary {
+  color: #fff;
+  background: linear-gradient(180deg, #8b5cf6 0%, #7c3aed 100%);
+}
+
+button.primary:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+button.ghost {
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+button.ghost:hover:not(:disabled) {
+  opacity: 0.7;
+}
+
+/* ---- Pages preview (white paper floating on the dark canvas) ---- */
+.pages {
+  display: flex;
+  flex-direction: column;
+  gap: 34px;
+}
+
+.page-label {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.page {
+  background: #ffffff;
+  width: 100%;
+  border-radius: var(--radius-md);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5),
+    0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.grid {
+  width: 100%;
+  height: 100%;
+  display: grid;
+}
+
+.cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 6px;
+}
+
+.cell img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+  cursor: grab;
+}
+
+.cell img:active {
+  cursor: grabbing;
+}
+
+.cell .remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  line-height: 1;
+  border-radius: 50%;
+  background: rgba(124, 58, 237, 0.9);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #fff;
+  font-size: 15px;
+  opacity: 0;
+  transition: opacity 0.15s ease, width 0.15s ease, height 0.15s ease;
+}
+
+.cell:hover .remove {
+  opacity: 1;
+}
+
+.cell .remove:hover {
+  width: 28px;
+  height: 28px;
+}
+
+/* ---- Breakpoints ---- */
+@media (max-width: 768px) {
+  .app {
+    padding: 40px 18px 72px;
+  }
+
+  header {
+    margin-bottom: 28px;
+  }
+
+  header h1 {
+    font-size: 56px;
+  }
+
+  .sub {
+    font-size: 16px;
+  }
+
+  .controls {
+    gap: 14px 16px;
+    padding: 18px;
+  }
+
+  .dropzone {
+    padding: 32px 20px;
+  }
+
+  .bar {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .app {
+    padding: 48px 16px 64px;
+  }
+
+  header {
+    margin-bottom: 36px;
+  }
+
+  header h1 {
+    font-size: 54px;
+  }
+
+  .sub {
+    font-size: 18px;
+    letter-spacing: -0.01em;
+  }
+
+  .controls {
+    gap: 12px;
+    padding: 14px;
+    margin-bottom: 24px;
+  }
+
+  .field input[type="number"],
+  .field select {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .dropzone {
+    padding: 26px 16px;
+    margin-bottom: 8px;
+  }
+
+  .dropzone strong {
+    font-size: 15px;
+  }
+
+  .dropzone span {
+    font-size: 13px;
+  }
+
+  .bar {
+    font-size: 13px;
+    margin: 32px 0;
+  }
+
+  .bar-actions {
+    width: 100%;
+  }
+
+  .bar-actions button {
+    flex: 1;
+  }
+
+  button {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  .page-label {
+    font-size: 11px;
+  }
+}
