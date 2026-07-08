@@ -27,11 +27,29 @@ async function decode(file) {
  * so large photos stay sharp and small ones don't bloat the file.
  * Transparent areas are flattened onto white.
  */
-function rasterize(bitmap, drawWmm, drawHmm, dpi, quality) {
-  const targetWpx = (drawWmm / MM_PER_INCH) * dpi
-  const scale = Math.min(1, targetWpx / bitmap.width)
-  const w = Math.max(1, Math.round(bitmap.width * scale))
-  const h = Math.max(1, Math.round(bitmap.height * scale))
+function rasterize(bitmap, boxWmm, boxHmm, dpi, quality, fitMode) {
+  // Source crop: 'cover' crops the image to the box aspect ratio; 'contain'
+  // (the default) uses the whole image untouched.
+  let sx = 0
+  let sy = 0
+  let sW = bitmap.width
+  let sH = bitmap.height
+  if (fitMode === 'cover') {
+    const boxAspect = boxWmm / boxHmm
+    sH = bitmap.width / boxAspect
+    if (sH > bitmap.height) {
+      sH = bitmap.height
+      sW = bitmap.height * boxAspect
+    }
+    sx = (bitmap.width - sW) / 2
+    sy = (bitmap.height - sH) / 2
+  }
+
+  // Output resolution targeted to `dpi` for the printed box, never upscaling.
+  const targetWpx = (boxWmm / MM_PER_INCH) * dpi
+  const scale = Math.min(1, targetWpx / sW)
+  const w = Math.max(1, Math.round(sW * scale))
+  const h = Math.max(1, Math.round(sH * scale))
 
   const canvas = document.createElement('canvas')
   canvas.width = w
@@ -39,7 +57,7 @@ function rasterize(bitmap, drawWmm, drawHmm, dpi, quality) {
   const ctx = canvas.getContext('2d')
   ctx.fillStyle = '#ffffff'
   ctx.fillRect(0, 0, w, h)
-  ctx.drawImage(bitmap, 0, 0, w, h)
+  ctx.drawImage(bitmap, sx, sy, sW, sH, 0, 0, w, h)
   return canvas.toDataURL('image/jpeg', quality)
 }
 
@@ -58,6 +76,7 @@ export async function generatePdf(items, opts) {
     marginMm = 10,
     gapMm = 4,
     cutLines = true,
+    fitMode = 'contain',
     dpi = 300,
     quality = 0.95,
     onProgress,
@@ -86,21 +105,29 @@ export async function generatePdf(items, opts) {
 
     const bitmap = await decode(items[i].file)
 
-    // Contain the image inside the cell, preserving aspect ratio.
-    const imgAspect = bitmap.width / bitmap.height
-    const cellAspect = cellW / cellH
-    let drawW, drawH
-    if (imgAspect > cellAspect) {
+    let drawW, drawH, x, y
+    if (fitMode === 'cover') {
+      // Fill the whole cell (image is cropped, not distorted).
       drawW = cellW
-      drawH = cellW / imgAspect
-    } else {
       drawH = cellH
-      drawW = cellH * imgAspect
+      x = cellX
+      y = cellY
+    } else {
+      // Fit the whole image inside the cell, preserving aspect ratio.
+      const imgAspect = bitmap.width / bitmap.height
+      const cellAspect = cellW / cellH
+      if (imgAspect > cellAspect) {
+        drawW = cellW
+        drawH = cellW / imgAspect
+      } else {
+        drawH = cellH
+        drawW = cellH * imgAspect
+      }
+      x = cellX + (cellW - drawW) / 2
+      y = cellY + (cellH - drawH) / 2
     }
-    const x = cellX + (cellW - drawW) / 2
-    const y = cellY + (cellH - drawH) / 2
 
-    const dataUrl = rasterize(bitmap, drawW, drawH, dpi, quality)
+    const dataUrl = rasterize(bitmap, drawW, drawH, dpi, quality, fitMode)
     bitmap.close?.()
 
     doc.addImage(dataUrl, 'JPEG', x, y, drawW, drawH, undefined, 'FAST')

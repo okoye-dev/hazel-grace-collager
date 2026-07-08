@@ -19,7 +19,9 @@ export default function App() {
     marginMm: 10,
     gapMm: 4,
     cutLines: true,
+    fitMode: 'contain',
     dpi: 300,
+    fileName: 'collage',
   })
 
   // Revoke object URLs when items are removed/unmounted.
@@ -75,7 +77,7 @@ export default function App() {
         ...opts,
         onProgress: (done, total) => setProgress({ done, total }),
       })
-      doc.save('collage.pdf')
+      doc.save((opts.fileName.trim() || 'collage') + '.pdf')
     } catch (err) {
       console.error(err)
       alert('Could not generate the PDF: ' + (err?.message || err))
@@ -121,45 +123,43 @@ export default function App() {
           </select>
         </div>
         <div className="field">
-          <label>Columns</label>
-          <input
-            type="number"
-            min="1"
-            max="8"
-            value={opts.cols}
-            onChange={(e) => setOpt('cols', clampInt(e.target.value, 1, 8, 3))}
-          />
+          <label>Fit</label>
+          <select
+            value={opts.fitMode}
+            onChange={(e) => setOpt('fitMode', e.target.value)}
+          >
+            <option value="contain">Fit (whole image)</option>
+            <option value="cover">Fill (crop to cell)</option>
+          </select>
         </div>
-        <div className="field">
-          <label>Rows</label>
-          <input
-            type="number"
-            min="1"
-            max="8"
-            value={opts.rows}
-            onChange={(e) => setOpt('rows', clampInt(e.target.value, 1, 8, 4))}
-          />
-        </div>
-        <div className="field">
-          <label>Margin (mm)</label>
-          <input
-            type="number"
-            min="0"
-            max="40"
-            value={opts.marginMm}
-            onChange={(e) => setOpt('marginMm', clampInt(e.target.value, 0, 40, 10))}
-          />
-        </div>
-        <div className="field">
-          <label>Gap (mm)</label>
-          <input
-            type="number"
-            min="0"
-            max="40"
-            value={opts.gapMm}
-            onChange={(e) => setOpt('gapMm', clampInt(e.target.value, 0, 40, 4))}
-          />
-        </div>
+        <NumberField
+          label="Columns"
+          value={opts.cols}
+          min={1}
+          max={12}
+          onChange={(v) => setOpt('cols', v)}
+        />
+        <NumberField
+          label="Rows"
+          value={opts.rows}
+          min={1}
+          max={12}
+          onChange={(v) => setOpt('rows', v)}
+        />
+        <NumberField
+          label="Margin (mm)"
+          value={opts.marginMm}
+          min={0}
+          max={40}
+          onChange={(v) => setOpt('marginMm', v)}
+        />
+        <NumberField
+          label="Gap (mm)"
+          value={opts.gapMm}
+          min={0}
+          max={40}
+          onChange={(v) => setOpt('gapMm', v)}
+        />
         <div className="field">
           <label>Quality (DPI)</label>
           <select
@@ -170,6 +170,15 @@ export default function App() {
             <option value={300}>300 (print)</option>
             <option value={450}>450 (max)</option>
           </select>
+        </div>
+        <div className="field">
+          <label>File name</label>
+          <input
+            type="text"
+            value={opts.fileName}
+            placeholder="collage"
+            onChange={(e) => setOpt('fileName', e.target.value)}
+          />
         </div>
         <div className="field checkbox">
           <label>
@@ -303,7 +312,18 @@ function Preview({ items, opts, onRemove, onDragStart, onDrop }) {
                     <img
                       src={it.url}
                       alt={it.name}
-                      style={{ outline: opts.cutLines ? '1px solid #b0b0b0' : 'none' }}
+                      style={{
+                        outline: opts.cutLines ? '1px solid #b0b0b0' : 'none',
+                        ...(opts.fitMode === 'cover'
+                          ? {
+                              width: '100%',
+                              height: '100%',
+                              maxWidth: 'none',
+                              maxHeight: 'none',
+                              objectFit: 'cover',
+                            }
+                          : {}),
+                      }}
                     />
                     <button
                       className="remove"
@@ -331,8 +351,45 @@ function pct(mm, opts) {
   return (mm / w) * 100
 }
 
-function clampInt(value, min, max, fallback) {
-  const n = parseInt(value, 10)
-  if (Number.isNaN(n)) return fallback
-  return Math.min(max, Math.max(min, n))
+// Numeric input that lets you type freely (including clearing the field) and
+// only clamps to [min, max] once you commit a value. Fixes the old behaviour
+// where clearing the box snapped back to a default, blocking values like 1.
+function NumberField({ label, value, min, max, onChange }) {
+  const [text, setText] = useState(String(value))
+  const focused = useRef(false)
+
+  useEffect(() => {
+    if (!focused.current) setText(String(value))
+  }, [value])
+
+  const clamp = (n) => Math.min(max, Math.max(min, n))
+
+  return (
+    <div className="field">
+      <label>{label}</label>
+      <input
+        type="number"
+        min={min}
+        max={max}
+        value={text}
+        onFocus={() => {
+          focused.current = true
+        }}
+        onChange={(e) => {
+          const raw = e.target.value
+          setText(raw)
+          if (raw === '') return
+          const n = parseInt(raw, 10)
+          if (!Number.isNaN(n)) onChange(clamp(n))
+        }}
+        onBlur={(e) => {
+          focused.current = false
+          const n = parseInt(e.target.value, 10)
+          const v = Number.isNaN(n) ? min : clamp(n)
+          onChange(v)
+          setText(String(v))
+        }}
+      />
+    </div>
+  )
 }

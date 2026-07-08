@@ -102,6 +102,7 @@ header h1 {
 }
 
 .field input[type="number"],
+.field input[type="text"],
 .field select {
   appearance: none;
   -webkit-appearance: none;
@@ -137,6 +138,7 @@ header h1 {
 }
 
 .field input[type="number"]:focus,
+.field input[type="text"]:focus,
 .field select:focus {
   border-color: var(--accent);
   background: rgba(255, 255, 255, 0.08);
@@ -387,6 +389,7 @@ button.ghost:hover:not(:disabled) {
   }
 
   .field input[type="number"],
+  .field input[type="text"],
   .field select {
     min-width: 0;
     flex: 1;
